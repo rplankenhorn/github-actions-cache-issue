@@ -1,0 +1,27 @@
+name: Javascript
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: 
+  group: js-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+
+  js:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: 'actions/checkout@v3'
+      - uses: ./.github/actions/asdf-action
+  
+  
