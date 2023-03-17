@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency: 
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: read-all
+
+jobs:
+
+  ci:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: 'actions/checkout@v3'
+      - name: Restore ASDF Cache
+        id: asdf-cache-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: ~/.asdf
+          key: ${{ runner.os }}-asdf-${{ hashFiles('.tool-versions') }}
+      - name: ASDF Setup
+        if: steps.asdf-cache-restore.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.11.3
+      - name: ASDF Path
+        run: |
+          echo "${HOME}/.asdf/bin" >> $GITHUB_PATH
+          echo "${HOME}/.asdf/shims" >> $GITHUB_PATH
+      - name: ASDF Plugin Install
+        if: steps.asdf-cache-restore.outputs.cache-hit != 'true'
+        run: |
+          asdf plugin add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+          asdf plugin-add pnpm
+          asdf plugin-add java https://github.com/halcyon/asdf-java.git
+      - name: ASDF Install
+        run: |
+          asdf install
+      - name: Save ASDF Cache
+        id: asdf-cache-save
+        uses: actions/cache/save@v3
+        with:
+          path: ~/.asdf
+          key: ${{ steps.asdf-cache-restore.outputs.cache-primary-key }}
+  
+  
