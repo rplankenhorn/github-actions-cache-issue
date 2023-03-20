@@ -4,18 +4,7 @@ import * as path from 'node:path';
 import * as core from '@actions/core';
 import * as exec from '@actions/exec';
 import { createHash } from 'crypto';
-import { hashFiles as hash } from '@actions/glob';
 import { restoreCache, saveCache } from '@actions/cache/lib/cache.js';
-
-const hashFiles = async (
-  matchPatterns,
-  followSymbolicLinks = false
-) => {
-  const patterns = matchPatterns.join('\n');
-  const match = await hash(patterns, { followSymbolicLinks });
-  if (match === '') return;
-  return match;
-}
 
 const main = async () => {
   const asdfDir = path.join(os.homedir(), '.asdf');
