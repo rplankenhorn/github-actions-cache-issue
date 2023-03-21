@@ -9,23 +9,15 @@ import { restoreCache, saveCache } from '@actions/cache/lib/cache.js';
 const main = async () => {
   const asdfDir = path.join(os.homedir(), '.asdf');
 
-  const asdfCacheOptions = {
-    id: 'asdf',
-    version: 3,
-    inputPaths: ['.tool-versions'],
-    cachedPaths: [asdfDir],
-    allowPartialRestore: true
-  };
+  const cachedPaths = [asdfDir];
 
   const data = await fs.promises.readFile('.tool-versions');
   
   const fileHash = createHash('sha256').update(data).digest('hex');
 
-  const primaryKey = `javascript-${process.env['RUNNER_OS']}-${process.env['RUNNER_ARCH']}-${
-    asdfCacheOptions.id
-  }-cache-v${asdfCacheOptions.version}-${fileHash}`;
+  const primaryKey = `javascript-${process.env['RUNNER_OS']}-${process.env['RUNNER_ARCH']}-asdf-cache-${fileHash}`;
   
-  const cacheId = restoreCache(asdfCacheOptions.inputPaths, primaryKey);
+  const cacheId = restoreCache(cachedPaths, primaryKey);
   
   const cacheHit = cacheId === primaryKey;
   
@@ -61,12 +53,12 @@ const main = async () => {
   
   let saveCacheId = -1;
   try {
-    saveCacheId = await saveCache(asdfCacheOptions.cachedPaths, primaryKey);
+    saveCacheId = await saveCache(cachedPaths, primaryKey);
     if (saveCacheId !== -1) {
       core.info(`Cache saved with key: ${primaryKey}`);
     }
   } catch (err) {
-    core.info(`${err}, ${JSON.stringify(asdfCacheOptions)}`);
+    core.info(err);
   }
 };
 
