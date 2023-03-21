@@ -17,7 +17,9 @@ const main = async () => {
 
   const primaryKey = `javascript-${process.env['RUNNER_OS']}-${process.env['RUNNER_ARCH']}-asdf-cache-${fileHash}`;
   
+  core.info('Started restoring cache')
   const cacheId = restoreCache(cachedPaths.slice(), primaryKey);
+  core.info('Finished restoring cache')
   
   const cacheHit = cacheId === primaryKey;
   
